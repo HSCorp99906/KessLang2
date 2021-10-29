@@ -16,10 +16,14 @@ void Parser::exit_err(std::string message) {
 void Parser::parse() {
     typedef std::map<std::string, std::string> token;
 
-    static bool parenCheck = false;
-    static bool outCalled = false;
+    bool parenCheck = false;
+    bool outCalled = false;
     bool openParen = false;
     bool closedParen = false;
+    unsigned int lineNum = 0;
+    bool end = false;
+    std::string lastToken;
+    bool openQuote = true;
 
     for (int i = 0; i < this -> tokens.size(); ++i) {
         for (int j = 0; j < this -> tokens[i].size(); ++j) {
@@ -27,6 +31,8 @@ void Parser::parse() {
                 if (it -> second == "out") {
                     parenCheck = true;
                     outCalled = true;
+                } else if (it -> first == "STATEMENT_END") {
+                    end = true;
                 }
 
                 if (parenCheck) {
@@ -37,14 +43,25 @@ void Parser::parse() {
                     } else {
                         if (it -> first == "OPEN_P") {
                             this -> exit_err("ERROR: Too many parenthesis on line: " + std::to_string(lineNum));
+                        } else if (it -> first == "CLOSED_P") {
+                            closedParen = true;
+                            parenCheck = false;
                         }
                     }
                 }
+
+                lastToken = it -> first;
             }
         }
 
+        ++lineNum;
+
         if (outCalled && !(openParen)) {
             this -> exit_err("ERROR: Missing parenthesis on line: " + std::to_string(lineNum));
+        } else if (end && lastToken != "STATEMENT_END") {
+            this -> exit_err("ERROR: Unexpected token on line: " + std::to_string(lineNum));
+        } else if (!(end)) {
+            exit_err("ERROR: Missing semicolen on line: " + std::to_string(lineNum));
         }
 
         parenCheck = false;

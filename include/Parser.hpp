@@ -10,7 +10,6 @@
 
 typedef std::vector<std::vector<std::map<std::string, std::string>>> __tokens;
 extern std::ifstream src;
-extern unsigned int lineNum;
 
 class Parser {
     private:

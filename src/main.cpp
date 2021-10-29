@@ -6,7 +6,6 @@
 
 
 std::ifstream src;
-unsigned int lineNum = 0;
 
 int main() {
     typedef std::map<std::string, std::string> tok;
@@ -18,7 +17,6 @@ int main() {
     __tokens _tokens;
 
     while (std::getline(src, line)) {
-        ++lineNum;
         Lexer lex(line);
         std::vector<tok> tokens = lex.tokenize();
 
@@ -32,8 +30,8 @@ int main() {
         _tokens.push_back(tokens);
 
         std::cout << "\n" << std::endl;
-
-        Parser parser(_tokens);
-        parser.parse();
     }
+
+    Parser parser(_tokens);
+    parser.parse();
 }
