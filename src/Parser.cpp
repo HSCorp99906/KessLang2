@@ -49,6 +49,8 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
     bool unsupportedFeatureUsed = false;
     bool varNotFound = false;
 
+    bool preIncrementUsed = false;
+
     short_uint openParenCount = 0;
     short_uint closedParenCount = 0;
 
@@ -114,6 +116,16 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                     }
                 }
 
+                if (preIncrementUsed) {
+                    if (it -> first != "OPERATOR" && it -> first != "STATEMENT_END") {
+                        varKey += it -> second;
+                    }
+                }
+
+                if (it -> second == "++") {
+                    preIncrementUsed = true;
+                }
+
                 if (it -> second == "out") {
                     parenCheck = true;
                     outCalled = true;
@@ -165,6 +177,19 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             } else {
                 varNotFound = true;
             }
+        } else if (preIncrementUsed) {
+            if (!(this -> varsCopy.count(varKey))) {
+                varNotFound = true;
+            } else {
+                std::stringstream ss(this -> varsCopy[varKey]);
+                int updateInt;
+                ss >> updateInt;
+                ++updateInt;
+                this -> varsCopy[varKey] = std::to_string(updateInt);
+                curTreeVal["OPERATOR"] = "PRE-INCREMENT";
+                curTreeVal["KEY"] = varKey;
+                this -> tree.push_back(curTreeVal);
+            }
         }
 
         if (outCalled && openParenCount == 0 && closedParenCount == 0) {
@@ -192,7 +217,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
         } else if (varIntOverflow) {
             this -> exit_err("ERROR: Integer overflow detected on line: " + std::to_string(lineNum));
         } else if (varIntUnderflow)  {
-            this -> exit_err("ERROR: Integer underflow detected on line: " + std::to_string(lineNum)); 
+            this -> exit_err("ERROR: Integer underflow detected on line: " + std::to_string(lineNum));
         }
 
         parenCheck = false;
@@ -208,6 +233,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
         varValueFound = false;
         varAlreadyExists = false;
         varLine = false;
+        bool preIncrementUsed = false;
         defined = false;
         string = "";
         varKey = "";

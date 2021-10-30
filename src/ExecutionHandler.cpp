@@ -1,6 +1,5 @@
 #include "../include/ExecutionHandler.hpp"
 
-
 void execute(std::map<std::string, std::string> treestream) {
     std::map<std::string, short int> intVars;
 
@@ -19,6 +18,10 @@ void execute(std::map<std::string, std::string> treestream) {
         if (treestream["DECLARED"] == "INT_VAR") {
             std::stringstream ss(treestream["VALUE"]);
             ss >> intVars[treestream["KEY"]];
+        }
+    } else if (treestream.count("OPERATOR")) {
+        if (treestream["OPERATOR"] == "PRE-INCREMENT") {
+            ++intVars[treestream["KEY"]];
         }
     }
 }
