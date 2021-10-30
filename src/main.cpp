@@ -6,7 +6,6 @@
 #include <string>
 #include <regex>
 
-#define KESS_DEBUG
 
 std::ifstream src;
 
