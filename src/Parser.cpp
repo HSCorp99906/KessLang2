@@ -166,7 +166,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
         } else if (unsupportedFeatureUsed) {
             this -> exit_err("ERROR: The feature you are trying to use is not supported. For now.. LINE: " + std::to_string(lineNum));
         } else if (varAlreadyExists) {
-            this -> exit_err("ERROR: Variable already defined. Line " + std::to_string(lineNum));
+            this -> exit_err("ERROR: Variable re-declared on line: " + std::to_string(lineNum));
         }
 
         parenCheck = false;
