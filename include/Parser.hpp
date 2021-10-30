@@ -8,7 +8,6 @@
 #include <fstream>
 #include <regex>
 
-
 typedef std::vector<std::vector<std::map<std::string, std::string>>> __tokens;
 typedef std::map<std::string, std::string> token;
 extern std::ifstream src;

@@ -10,6 +10,12 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
     typedef std::map<std::string, std::string> tok;
     tok curToken;
 
+    bool openQuote = false;
+    bool closedQuote = false;
+
+    bool intDec = false;
+    bool expectingVarVal = false;
+
     std::vector<tok> tokens;
     boost::split(this -> split_src, this -> src, boost::is_any_of(" "));
 
@@ -20,6 +26,17 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
         for (int j = 0; j < m.size(); ++j) {
             if (m[i] == "out") {
                 curToken["IDENTIFIER"] = m[i];
+            }
+        }
+
+        std::regex_search(this -> split_src[i], m, std::regex("int"));
+
+        for (int i = 0; i < m.size(); ++i) {
+            if (m[i] == "int") {
+                intDec = true;
+                curToken["INT_VAR_DECLARATION"] = "int";
+                tokens.push_back(curToken);
+                curToken.clear();
             }
         }
 
@@ -56,6 +73,13 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
                     curToken["QUOTE"] = this -> split_src[i][j];
                     tokens.push_back(curToken);
                     curToken.clear();
+
+                    if (!(openQuote)) {
+                        openQuote = true;
+                    } else {
+                        closedQuote = true;
+                    }
+
                     break;
             }
 
@@ -118,7 +142,7 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
                 case 'X':
                 case 'Y':
                 case 'Z':
-                    curToken["LETTER"] = this -> split_src[i][j];
+                    curToken["CHAR"] = this -> split_src[i][j];
                     tokens.push_back(curToken);
                     curToken.clear();
                     break;

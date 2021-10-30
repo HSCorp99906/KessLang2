@@ -26,6 +26,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
 
     bool openQuote = false;
     bool closedQuote = false;
+    bool unexpectedToken = false;
 
     token curTreeVal;
     std::string string = "";
@@ -39,8 +40,10 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                 if (it -> second == "out") {
                     parenCheck = true;
                     outCalled = true;
-                } else if (it -> first == "STATEMENT_END") {
+                } else if (it -> first == "STATEMENT_END" && !(end)) {
                     end = true;
+                } else if (it -> first == "STATEMENT_END" && end) {
+                    unexpectedToken = true;
                 }
 
                 if (parenCheck) {
@@ -82,6 +85,8 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             this -> exit_err("ERROR: Lingering quotes on line: " + std::to_string(lineNum));
         } else if (openParenCount != closedParenCount) {
             this -> exit_err("ERROR: Lingering parenthesis on line: " + std::to_string(lineNum));
+        } else if (unexpectedToken) {
+            this -> exit_err("ERROR: Unexpected token on line: " + std::to_string(lineNum));
         }
 
         parenCheck = false;
