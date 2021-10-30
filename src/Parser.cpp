@@ -40,6 +40,8 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
 
     bool varValueFound = false;
     bool invalidTypeInt = false;  // If what is supposed to be int has invalid type.
+    bool varIntOverflow = false;
+    bool varIntUnderflow = false;
     bool varLine = false;
     bool defined = false;
     bool varAlreadyExists = false;  // Raises error if var already exists.
@@ -83,13 +85,27 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                             invalidTypeInt = true;
                         } else if (std::regex_match(varValue, std::regex("[A-Za-z]+[a-zA-Z0-9]*"))) {
                             unsupportedFeatureUsed = true;
+                        } else if (std::regex_match(varValue, std::regex("\\d+\\.\\d+"))) {
+                            invalidTypeInt = true;
                         }
 
                         if (this -> varsCopy.count(varKey)) {
                             varAlreadyExists = true;
                         }
 
-                        if (!(varAlreadyExists)) {
+                        if (!(varAlreadyExists) && !(invalidTypeInt) && !(unsupportedFeatureUsed)) {
+                            std::stringstream ss(varValue);
+
+                            int checkVal;
+
+                            ss >> checkVal;
+
+                            if (checkVal > 32764) {
+                                varIntOverflow = true;
+                            } else if (checkVal < -32764) {
+                                varIntUnderflow = true;
+                            }
+
                             this -> varsCopy[varKey] = varValue;
 
                             curTreeVal["VALUE"] = varValue;
@@ -173,6 +189,10 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             this -> exit_err("ERROR: Variable re-declared on line: " + std::to_string(lineNum));
         } else if (varNotFound) {
             this -> exit_err("ERROR: Variable not found on line: " + std::to_string(lineNum));
+        } else if (varIntOverflow) {
+            this -> exit_err("ERROR: Integer overflow detected on line: " + std::to_string(lineNum));
+        } else if (varIntUnderflow)  {
+            this -> exit_err("ERROR: Integer underflow detected on line: " + std::to_string(lineNum)); 
         }
 
         parenCheck = false;

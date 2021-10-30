@@ -7,6 +7,8 @@
 #include <iostream>
 #include <fstream>
 #include <regex>
+#include <sstream>
+
 
 typedef std::vector<std::vector<std::map<std::string, std::string>>> __tokens;
 typedef std::map<std::string, std::string> token;
