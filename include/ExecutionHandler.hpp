@@ -5,6 +5,7 @@
 #include <map>
 #include <iostream>
 #include <sstream>
+#include <boost/algorithm/string/trim.hpp>
 
 
 void execute(std::map<std::string, std::string> treestream);

@@ -48,6 +48,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
 
     bool unsupportedFeatureUsed = false;
     bool varNotFound = false;
+    bool lgOperator = false;
 
     bool preIncrementUsed = false;
 
@@ -175,7 +176,44 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                 curTreeVal["VALUE"] = this -> varsCopy[string];
                 this -> tree.push_back(curTreeVal);
             } else {
-                varNotFound = true;
+
+                std::smatch m;
+
+                curTreeVal["CALLED"] = "OUT";
+                curTreeVal["VALUE"] = "__OPERATOR__";
+                this -> tree.push_back(curTreeVal);
+
+                std::regex_search(string, m, std::regex("(>|<)"));
+
+                for (int f = 0; f < m.size(); ++f) {
+                    if (m[i] == '>' || m[i] == '<') {
+                        lgOperator = true;
+                        curTreeVal["OPERATOR"] = m[i];
+
+                        std::regex_search(string, m, std::regex("^\\d+"));
+
+                        for (int v = 0; v < m.size(); ++v) {
+                            curTreeVal["OPERAND_1"] = m[i];
+                        }
+
+                        std::regex_search(string, m, std::regex("(<\\s*\\d+|>\\s*\\d+)"));
+
+                        for (int v = 0; v < m.size(); ++v) {
+                            std::string op2 = m[v];
+                            op2 = std::regex_replace(op2, std::regex("<"), "");
+                            op2 = std::regex_replace(op2, std::regex(">"), "");
+                            op2 = std::regex_replace(op2, std::regex(" "), "");
+
+                            curTreeVal["OPERAND_2"] = op2;
+                        }
+                    }
+                }
+
+                if (!(lgOperator)) {
+                    varNotFound = true;
+                } else {
+                    this -> tree.push_back(curTreeVal);
+                }
             }
         } else if (preIncrementUsed) {
             if (!(this -> varsCopy.count(varKey))) {
@@ -226,6 +264,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
         closedParenCount = 0;
         end = false;
         space = false;
+        lgOperator = false;
         unsupportedFeatureUsed = false;
         expectingIntVarKey = false;
         expectingIntVarValue = false;
