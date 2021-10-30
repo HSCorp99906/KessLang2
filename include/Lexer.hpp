@@ -13,6 +13,9 @@
 #define QUOTE '"'
 #define SINGLE_QUOTE '\''
 #define END_STATEMENT ';'
+#define TAB '\t'
+#define WHITESPACE ' '
+#define NEWLINE '\n'
 
 
 class Lexer {

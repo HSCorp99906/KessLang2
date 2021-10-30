@@ -61,7 +61,7 @@ void Parser::parse() {
 
         if (outCalled && !(openParen)) {
             this -> exit_err("ERROR: Missing parenthesis on line: " + std::to_string(lineNum));
-        } else if (end && lastToken != "STATEMENT_END") {
+        } else if (end && lastToken != "STATEMENT_END" && lastToken != "") {
             this -> exit_err("ERROR: Unexpected token on line: " + std::to_string(lineNum));
         } else if (!(end)) {
             exit_err("ERROR: Missing semicolen on line: " + std::to_string(lineNum));

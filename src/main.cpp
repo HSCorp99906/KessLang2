@@ -17,6 +17,12 @@ int main() {
     __tokens _tokens;
 
     while (std::getline(src, line)) {
+
+        if (line == "") {
+            Lexer lex(";");
+            continue;
+        }
+
         Lexer lex(line);
         std::vector<tok> tokens = lex.tokenize();
 
