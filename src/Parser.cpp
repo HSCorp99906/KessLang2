@@ -50,7 +50,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
     bool varNotFound = false;
     bool lgOperator = false;
 
-    bool preIncrementUsed = false;
+    bool incrementUsed = false;
 
     short_uint openParenCount = 0;
     short_uint closedParenCount = 0;
@@ -117,14 +117,14 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                     }
                 }
 
-                if (preIncrementUsed) {
+                if (incrementUsed) {
                     if (it -> first != "OPERATOR" && it -> first != "STATEMENT_END") {
                         varKey += it -> second;
                     }
                 }
 
                 if (it -> second == "++") {
-                    preIncrementUsed = true;
+                    incrementUsed = true;
                 }
 
                 if (it -> second == "out") {
@@ -215,7 +215,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                     this -> tree.push_back(curTreeVal);
                 }
             }
-        } else if (preIncrementUsed) {
+        } else if (incrementUsed) {
             if (!(this -> varsCopy.count(varKey))) {
                 varNotFound = true;
             } else {
@@ -272,7 +272,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
         varValueFound = false;
         varAlreadyExists = false;
         varLine = false;
-        bool preIncrementUsed = false;
+        bool incrementUsed = false;
         defined = false;
         string = "";
         varKey = "";
