@@ -6,6 +6,8 @@
 #include <string>
 #include <regex>
 
+#define KESS_DEBUG
+
 std::ifstream src;
 
 
@@ -27,8 +29,7 @@ int main(int argc, char* argv[]) {
     while (std::getline(src, line)) {
 
         if (line == "") {
-            Lexer lex(";");
-            continue;
+            line = ";";
         }
 
         line = std::regex_replace(line, std::regex("\\s"), "`");
