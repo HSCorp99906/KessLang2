@@ -124,6 +124,35 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
                     break;
 
             }
+
+            switch (split_src[i][j]) {
+                case '`':
+                    curToken["SPACE"] = this -> split_src[i][j];
+                    tokens.push_back(curToken);
+                    curToken.clear();
+                    break;
+                case ',':
+                    curToken["PUNCTUATION"] = this -> split_src[i][j];
+                    tokens.push_back(curToken);
+                    curToken.clear();
+                    break;
+                case '!':
+                    curToken["PUNCTUATION"] = this -> split_src[i][j];
+                    tokens.push_back(curToken);
+                    curToken.clear();
+                    break;
+                case '.':
+                    curToken["PUNCTUATION"] = this -> split_src[i][j];
+                    tokens.push_back(curToken);
+                    curToken.clear();
+                    break;
+                case '?':
+                    curToken["PUNCTUATION"] = this -> split_src[i][j];
+                    tokens.push_back(curToken);
+                    curToken.clear();
+                    break;
+
+            }
         }
     }
 

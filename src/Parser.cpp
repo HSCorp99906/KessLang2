@@ -13,7 +13,7 @@ void Parser::exit_err(std::string message) {
 }
 
 
-void Parser::parse() {
+std::vector<std::map<std::string, std::string>> Parser::parse() {
     typedef std::map<std::string, std::string> token;
 
     bool parenCheck = false;
@@ -23,10 +23,12 @@ void Parser::parse() {
     unsigned int lineNum = 0;
     bool end = false;
     std::string lastToken;
-    bool openQuote = true;
+    bool openQuote = false;
+    bool closedQuote = false;
 
     std::vector<token> tree;
     token curTreeVal;
+    std::string string = "";
 
     for (int i = 0; i < this -> tokens.size(); ++i) {
         for (int j = 0; j < this -> tokens[i].size(); ++j) {
@@ -53,18 +55,37 @@ void Parser::parse() {
                     }
                 }
 
+                if (it -> first == "QUOTE" && !(openQuote)) {
+                } else if (it -> first == "QUOTE" && openQuote) {
+                    closedQuote = true;
+                } else if (it -> first != "QUOTE" && openParen && !(closedParen)) {
+                    string += it -> second;
+                }
+
                 lastToken = it -> first;
             }
         }
 
         ++lineNum;
 
+        if (outCalled) {
+            string = std::regex_replace(string, std::regex("`"), " ");
+            string = std::regex_replace(string, std::regex("\\("), "");
+            curTreeVal["CALLED"] = "OUT";
+            curTreeVal["STRING"] = string;
+            tree.push_back(curTreeVal);
+        }
+
         if (outCalled && !(openParen)) {
             this -> exit_err("ERROR: Missing parenthesis on line: " + std::to_string(lineNum));
         } else if (end && lastToken != "STATEMENT_END" && lastToken != "") {
             this -> exit_err("ERROR: Unexpected token on line: " + std::to_string(lineNum));
         } else if (!(end)) {
-            exit_err("ERROR: Missing semicolen on line: " + std::to_string(lineNum));
+            this -> exit_err("ERROR: Missing semicolen on line: " + std::to_string(lineNum));
+        } else if (openQuote && !(closedQuote) || !(openQuote) && closedQuote) {
+            this -> exit_err("ERROR: Lingering quotes on line: " + std::to_string(lineNum));
+        } else if (openParen && !(closedParen) || !(openParen) && closedParen) {
+            this -> exit_err("ERROR: Lingering parenthesis on line: " + std::to_string(lineNum));
         }
 
         parenCheck = false;
@@ -72,5 +93,9 @@ void Parser::parse() {
         openParen = false;
         closedParen = false;
         end = false;
+        string = "";
+        curTreeVal.clear();
     }
+
+    return tree;
 }

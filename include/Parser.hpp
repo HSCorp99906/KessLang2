@@ -6,6 +6,7 @@
 #include <map>
 #include <iostream>
 #include <fstream>
+#include <regex>
 
 
 typedef std::vector<std::vector<std::map<std::string, std::string>>> __tokens;
@@ -20,7 +21,7 @@ class Parser {
     public:
         Parser(__tokens tokens);
 
-        void parse();
+        std::vector<std::map<std::string, std::string>> parse();
 };
 
 
