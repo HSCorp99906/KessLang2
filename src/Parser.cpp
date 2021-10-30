@@ -185,6 +185,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
         defined = false;
         string = "";
         varKey = "";
+        varValue = "";
         curTreeVal.clear();
     }
 
