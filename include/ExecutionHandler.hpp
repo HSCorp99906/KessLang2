@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include <sstream>
 
 
 void execute(std::map<std::string, std::string> treestream);

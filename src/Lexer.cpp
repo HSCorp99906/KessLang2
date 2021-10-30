@@ -175,7 +175,15 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
                     tokens.push_back(curToken);
                     curToken.clear();
                     break;
-
+                case '=':
+                case '+':
+                case '-':
+                case '>':
+                case '<':
+                    curToken["OPERATOR"] = this -> split_src[i][j];
+                    tokens.push_back(curToken);
+                    curToken.clear();
+                    break;
             }
         }
     }

@@ -1,1 +1,2 @@
-out("Hello, World!");
+int abc = 1;
+out(abc);
