@@ -24,8 +24,8 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
         std::regex_search(this -> split_src[i], m, std::regex("out"));
 
         for (int j = 0; j < m.size(); ++j) {
-            if (m[i] == "out") {
-                curToken["IDENTIFIER"] = m[i];
+            if (m[j] == "out") {
+                curToken["IDENTIFIER"] = m[j];
                 tokens.push_back(curToken);
                 curToken.clear();
             }
@@ -33,9 +33,29 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
 
         std::regex_search(this -> split_src[i], m, std::regex("\\+\\+"));
 
-        for (int i = 0; i < m.size(); ++i) {
-            if (m[i] == "++") {
-                curToken["OPERATOR"] = m[i];
+        for (int j = 0; j < m.size(); ++j) {
+            if (m[j] == "++") {
+                curToken["OPERATOR"] = m[j];
+                tokens.push_back(curToken);
+                curToken.clear();
+            }
+        }
+
+        std::regex_search(this -> split_src[i], m, std::regex("true"));
+
+        for (int j = 0; j < m.size(); ++j) {
+            if (m[j] == "true") {
+                curToken["BOOLEAN"] = m[j];
+                tokens.push_back(curToken);
+                curToken.clear();
+            }
+        }
+
+        std::regex_search(this -> split_src[i], m, std::regex("false"));
+
+        for (int j = 0; j < m.size(); ++j) {
+            if (m[j] == "false") {
+                curToken["BOOLEAN"] = m[j];
                 tokens.push_back(curToken);
                 curToken.clear();
             }
@@ -43,8 +63,8 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
 
         std::regex_search(this -> split_src[i], m, std::regex("int"));
 
-        for (int i = 0; i < m.size(); ++i) {
-            if (m[i] == "int") {
+        for (int j = 0; j < m.size(); ++j) {
+            if (m[j] == "int") {
                 intDec = true;
                 curToken["INT_VAR_DECLARATION"] = "int";
                 tokens.push_back(curToken);

@@ -166,7 +166,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             string = std::regex_replace(string, std::regex("`"), " ");
             string = std::regex_replace(string, std::regex("\\("), "");
 
-            if (!(this -> varsCopy.count(string)) && openQuote || std::regex_match(string, std::regex("\\d+"))) {
+            if (!(this -> varsCopy.count(string)) && openQuote || std::regex_match(string, std::regex("\\d+")) || std::regex_match(string, std::regex("(true|false)"))) {
                 curTreeVal["CALLED"] = "OUT";
                 curTreeVal["VALUE"] = string;
                 this -> tree.push_back(curTreeVal);
