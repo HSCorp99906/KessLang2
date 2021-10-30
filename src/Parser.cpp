@@ -80,7 +80,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             this -> exit_err("ERROR: Missing semicolen on line: " + std::to_string(lineNum));
         } else if (openQuote && !(closedQuote) || !(openQuote) && closedQuote) {
             this -> exit_err("ERROR: Lingering quotes on line: " + std::to_string(lineNum));
-        } else if (openParenCount < closedParenCount || openParenCount > closedParenCount || closedParenCount < openParenCount || closedParenCount > openParenCount) {
+        } else if (openParenCount != closedParenCount) {
             this -> exit_err("ERROR: Lingering parenthesis on line: " + std::to_string(lineNum));
         }
 
