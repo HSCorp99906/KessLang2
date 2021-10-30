@@ -9,12 +9,18 @@
 std::ifstream src;
 
 
-int main() {
+int main(int argc, char* argv[]) {
     typedef std::map<std::string, std::string> tok;
     typedef std::vector<std::vector<std::map<std::string, std::string>>> __tokens;
 
-    src.open("kesslang.kess");
+    src.open(argv[1]);
     std::string line;
+
+    if (!(src)) {
+        std::cout << "ERROR: File does not exist (terminated)." << std::endl;
+        src.close();
+        exit(1);
+    }
 
     __tokens _tokens;
 

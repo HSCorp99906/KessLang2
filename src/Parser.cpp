@@ -121,6 +121,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                 }
 
                 if (it -> first == "QUOTE" && !(openQuote)) {
+                    openQuote = true;
                 } else if (it -> first == "QUOTE" && openQuote) {
                     closedQuote = true;
                 } else if (it -> first != "QUOTE" && openParenCount > 0 && closedParenCount < 1) {
@@ -137,7 +138,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             string = std::regex_replace(string, std::regex("`"), " ");
             string = std::regex_replace(string, std::regex("\\("), "");
 
-            if (!(this -> varsCopy.count(string)) && std::regex_match(string, std::regex("(\".*\"|\\d+)"))) {
+            if (!(this -> varsCopy.count(string)) && openQuote || std::regex_match(string, std::regex("\\d+"))) {
                 curTreeVal["CALLED"] = "OUT";
                 curTreeVal["VALUE"] = string;
                 this -> tree.push_back(curTreeVal);
