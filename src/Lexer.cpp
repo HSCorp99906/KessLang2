@@ -72,6 +72,26 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
             }
         }
 
+        std::regex_search(this -> split_src[i], m, std::regex("=="));
+
+        for (int j = 0; j < m.size(); ++j) {
+            if (m[j] == "==") {
+                curToken["OPERATOR"] = "==";
+                tokens.push_back(curToken);
+                curToken.clear();
+            }
+        }
+
+        std::regex_search(this -> split_src[i], m, std::regex("!="));
+
+        for (int i = 0; i < m.size(); ++i) {
+            if (m[i] == "!=") {
+                curToken["OPERATOR"] = "!=";
+                tokens.push_back(curToken);
+                curToken.clear();
+            }
+        }
+
         for (int j = 0; j < this -> split_src[i].size(); ++j) {
             switch (this -> split_src[i][j]) {
                 case '0':

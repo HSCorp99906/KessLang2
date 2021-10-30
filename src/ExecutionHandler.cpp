@@ -50,6 +50,38 @@ void execute(std::map<std::string, std::string> treestream) {
                     } else {
                         std::cout << "false" << std::endl;
                     }
+                } else if (treestream["OPERATOR"] == "==") {
+                    int operand_1;
+                    int operand_2;
+
+                    std::stringstream ss;
+                    ss << treestream["OPERAND_1"];
+                    ss >> operand_1;
+                    boost::trim(treestream["OPERAND_2"]);
+                    ss = std::stringstream(treestream["OPERAND_2"]);
+                    ss >> operand_2;
+
+                    if (operand_1 == operand_2) {
+                        std::cout << "true" << std::endl;
+                    } else {
+                        std::cout << "false" << std::endl;
+                    }
+                } else if (treestream["OPERATOR"] == "!=") {
+                    int operand_1;
+                    int operand_2;
+
+                    std::stringstream ss;
+                    ss << treestream["OPERAND_1"];
+                    ss >> operand_1;
+                    boost::trim(treestream["OPERAND_2"]);
+                    ss = std::stringstream(treestream["OPERAND_2"]);
+                    ss >> operand_2;
+
+                    if (operand_1 != operand_2) {
+                        std::cout << "true" << std::endl;
+                    } else {
+                        std::cout << "false" << std::endl;
+                    }
                 }
             }
         }

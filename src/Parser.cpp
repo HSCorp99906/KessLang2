@@ -49,6 +49,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
     bool unsupportedFeatureUsed = false;
     bool varNotFound = false;
     bool lgOperator = false;
+    bool equalityOperator = false;
 
     bool incrementUsed = false;
 
@@ -183,17 +184,17 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                 curTreeVal["VALUE"] = "__OPERATOR__";
                 this -> tree.push_back(curTreeVal);
 
-                std::regex_search(string, m, std::regex("(>|<)"));
+                std::regex_search(string, m, std::regex("(>|<|==|!=)"));
 
                 for (int f = 0; f < m.size(); ++f) {
-                    if (m[i] == '>' || m[i] == '<') {
+                    if (m[f] == '>' || m[f] == '<') {
                         lgOperator = true;
-                        curTreeVal["OPERATOR"] = m[i];
+                        curTreeVal["OPERATOR"] = m[f];
 
                         std::regex_search(string, m, std::regex("^\\d+"));
 
                         for (int v = 0; v < m.size(); ++v) {
-                            curTreeVal["OPERAND_1"] = m[i];
+                            curTreeVal["OPERAND_1"] = m[v];
                         }
 
                         std::regex_search(string, m, std::regex("(<\\s*\\d+|>\\s*\\d+)"));
@@ -206,10 +207,49 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
 
                             curTreeVal["OPERAND_2"] = op2;
                         }
+                    } else if (m[f] == "==") {
+                        equalityOperator = true;
+                        curTreeVal["OPERATOR"] = m[f];
+
+                        std::regex_search(string, m, std::regex("^\\d+"));
+
+                        for (int v = 0; v < m.size(); ++v) {
+                            curTreeVal["OPERAND_1"] = m[v];
+                        }
+
+                        std::regex_search(string, m, std::regex("(==\\s*\\d+)"));
+
+                        for (int v = 0; v < m.size(); ++v) {
+                            std::string op2 = m[v];
+                            op2 = std::regex_replace(op2, std::regex("=="), "");
+                            op2 = std::regex_replace(op2, std::regex(" "), "");
+
+                            curTreeVal["OPERAND_2"] = op2;
+                        }
+                    } else if (m[f] == "!=") {
+                        equalityOperator = true;
+
+                        curTreeVal["OPERATOR"] = m[f];
+
+                        std::regex_search(string, m, std::regex("^\\d+"));
+
+                        for (int v = 0; v < m.size(); ++v) {
+                            curTreeVal["OPERAND_1"] = m[v];
+                        }
+
+                        std::regex_search(string, m, std::regex("(!=\\s*\\d+)"));
+
+                        for (int v = 0; v < m.size(); ++v) {
+                            std::string op2 = m[v];
+                            op2 = std::regex_replace(op2, std::regex("!="), "");
+                            op2 = std::regex_replace(op2, std::regex(" "), "");
+
+                            curTreeVal["OPERAND_2"] = op2;
+                        }
                     }
                 }
 
-                if (!(lgOperator)) {
+                if (!(lgOperator) && !(equalityOperator)) {
                     varNotFound = true;
                 } else {
                     this -> tree.push_back(curTreeVal);
@@ -272,7 +312,8 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
         varValueFound = false;
         varAlreadyExists = false;
         varLine = false;
-        bool incrementUsed = false;
+        incrementUsed = false;
+        equalityOperator = false;
         defined = false;
         string = "";
         varKey = "";
