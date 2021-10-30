@@ -25,8 +25,6 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
     std::string lastToken;
     bool openQuote = false;
     bool closedQuote = false;
-
-    std::vector<token> tree;
     token curTreeVal;
     std::string string = "";
 
@@ -73,7 +71,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             string = std::regex_replace(string, std::regex("\\("), "");
             curTreeVal["CALLED"] = "OUT";
             curTreeVal["STRING"] = string;
-            tree.push_back(curTreeVal);
+            this -> tree.push_back(curTreeVal);
         }
 
         if (outCalled && !(openParen)) {
