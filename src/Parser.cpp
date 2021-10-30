@@ -45,6 +45,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
     bool varAlreadyExists = false;  // Raises error if var already exists.
 
     bool unsupportedFeatureUsed = false;
+    bool varNotFound = false;
 
     short_uint openParenCount = 0;
     short_uint closedParenCount = 0;
@@ -136,14 +137,16 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             string = std::regex_replace(string, std::regex("`"), " ");
             string = std::regex_replace(string, std::regex("\\("), "");
 
-            if (!(this -> varsCopy.count(string))) {
+            if (!(this -> varsCopy.count(string)) && std::regex_match(string, std::regex("(\".*\"|\\d+)"))) {
                 curTreeVal["CALLED"] = "OUT";
                 curTreeVal["VALUE"] = string;
                 this -> tree.push_back(curTreeVal);
-            } else {
+            } else if (this -> varsCopy.count(string)) {
                 curTreeVal["CALLED"] = "OUT";
                 curTreeVal["VALUE"] = this -> varsCopy[string];
                 this -> tree.push_back(curTreeVal);
+            } else {
+                varNotFound = true;
             }
         }
 
@@ -167,6 +170,8 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             this -> exit_err("ERROR: The feature you are trying to use is not supported. For now.. LINE: " + std::to_string(lineNum));
         } else if (varAlreadyExists) {
             this -> exit_err("ERROR: Variable re-declared on line: " + std::to_string(lineNum));
+        } else if (varNotFound) {
+            this -> exit_err("ERROR: Variable not found on line: " + std::to_string(lineNum));
         }
 
         parenCheck = false;
