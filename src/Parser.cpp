@@ -25,6 +25,9 @@ void Parser::parse() {
     std::string lastToken;
     bool openQuote = true;
 
+    std::vector<token> tree;
+    token curTreeVal;
+
     for (int i = 0; i < this -> tokens.size(); ++i) {
         for (int j = 0; j < this -> tokens[i].size(); ++j) {
             for (token::const_iterator it = this -> tokens[i][j].begin(); it != tokens[i][j].end(); ++it) {
@@ -67,5 +70,7 @@ void Parser::parse() {
         parenCheck = false;
         outCalled = false;
         openParen = false;
+        closedParen = false;
+        end = false;
     }
 }
