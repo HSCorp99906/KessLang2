@@ -31,6 +31,16 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
             }
         }
 
+        std::regex_search(this -> split_src[i], m, std::regex("if"));
+
+        for (int j = 0; j < m.size(); ++j) {
+            if (m[j] == "if") {
+                curToken["IF-STATEMENT"] = "if";
+                tokens.push_back(curToken);
+                curToken.clear();
+            }
+        }
+
         std::regex_search(this -> split_src[i], m, std::regex("\\+\\+"));
 
         for (int j = 0; j < m.size(); ++j) {
@@ -84,8 +94,8 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
 
         std::regex_search(this -> split_src[i], m, std::regex("!="));
 
-        for (int i = 0; i < m.size(); ++i) {
-            if (m[i] == "!=") {
+        for (int j = 0; j < m.size(); ++j) {
+            if (m[j] == "!=") {
                 curToken["OPERATOR"] = "!=";
                 tokens.push_back(curToken);
                 curToken.clear();
@@ -233,6 +243,16 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
                 case '>':
                 case '<':
                     curToken["OPERATOR"] = this -> split_src[i][j];
+                    tokens.push_back(curToken);
+                    curToken.clear();
+                    break;
+                case '{':
+                    curToken["OPEN_CURLY"] = this -> split_src[i][j];
+                    tokens.push_back(curToken);
+                    curToken.clear();
+                    break;
+                case '}':
+                    curToken["CLOSED_CURLY"] = this -> split_src[i][j];
                     tokens.push_back(curToken);
                     curToken.clear();
                     break;

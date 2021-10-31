@@ -17,7 +17,6 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
     typedef std::map<std::string, std::string> token;
     typedef unsigned short int short_uint;
 
-    bool parenCheck = false;
     bool outCalled = false;
 
     unsigned int lineNum = 0;
@@ -31,6 +30,9 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
     bool expectingIntVarKey = false;
     bool expectingIntVarValue = false;
     bool space = false;
+
+    bool openCurly = false;
+    bool closedCurly = false;
 
     token curTreeVal;
 
@@ -51,6 +53,17 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
     bool lgOperator = false;
     bool equalityOperator = false;
 
+    bool ifStatementUsed = false;
+    bool ifStatementLine = false;
+    bool ifStatementBegin = false;
+    bool ifStatementEnd = false;
+    std::string condition = "";
+
+    bool unexpectedIndent = false;
+
+    short_uint indentLevel = 0;
+    bool ignoreIndent = false;
+
     bool incrementUsed = false;
 
     short_uint openParenCount = 0;
@@ -59,7 +72,6 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
     for (int i = 0; i < this -> tokens.size(); ++i) {
         for (int j = 0; j < this -> tokens[i].size(); ++j) {
             for (token::const_iterator it = this -> tokens[i][j].begin(); it != tokens[i][j].end(); ++it) {
-
                 if (expectingIntVarKey && space) {
                     if (it -> first != "SPACE") {
                         varKey += it -> second;
@@ -118,6 +130,8 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                     }
                 }
 
+                /* END ZONE */
+
                 if (incrementUsed) {
                     if (it -> first != "OPERATOR" && it -> first != "STATEMENT_END") {
                         varKey += it -> second;
@@ -128,8 +142,16 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                     incrementUsed = true;
                 }
 
+                if (it -> first != "SPACE" && it -> first != "IDENTIFIER") {
+                    /* This may need to be changed sooner or later */
+                    ignoreIndent = true;
+                }
+
+                if (!(ignoreIndent)) {
+                    ++indentLevel;
+                }
+
                 if (it -> second == "out") {
-                    parenCheck = true;
                     outCalled = true;
                 } else if (it -> first == "STATEMENT_END" && !(end)) {
                     end = true;
@@ -140,14 +162,33 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                     varLine = true;
                 } else if (it -> first == "SPACE") {
                     space = true;
+                } else if (it -> first == "IF-STATEMENT") {
+                    ifStatementLine = true;
+                    ifStatementUsed = true;
+                    ifStatementBegin = true;
                 }
 
-                if (parenCheck) {
-                    if (it -> first == "OPEN_P") {
-                        ++openParenCount;
-                    } else if (it -> first == "CLOSED_P") {
-                        ++closedParenCount;
-                    }
+                if (ifStatementBegin && openParenCount > 0 && closedParenCount == 0) {
+                    condition += it -> second;
+                }
+
+                if (it -> first == "OPEN_CURLY") {
+                    openCurly = true;
+                }
+
+                if (openCurly && it -> first != "SPACE" && it -> first != "OPEN_CURLY") {
+                    unexpectedToken = true;
+                }
+
+                if (ifStatementUsed && it -> first == "CLOSED_CURLY") {
+                    closedCurly = true;
+                    ifStatementEnd = true;
+                }
+
+                if (it -> first == "OPEN_P") {
+                    ++openParenCount;
+                } else if (it -> first == "CLOSED_P") {
+                    ++closedParenCount;
                 }
 
                 if (it -> first == "QUOTE" && !(openQuote)) {
@@ -167,6 +208,45 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
         if (outCalled) {
             string = std::regex_replace(string, std::regex("`"), " ");
             string = std::regex_replace(string, std::regex("\\("), "");
+
+            if (ifStatementUsed) {
+                std::smatch m;
+
+                condition = std::regex_replace(condition, std::regex("`"), "");
+                condition = std::regex_replace(condition, std::regex("\\)"), "");
+
+                std::regex_search(condition, m, std::regex("^[A-Za-z]+[0-9A-Za-z]*"));
+
+                std::string posVar1;
+                std::string posVar2;
+
+                for (int idx = 0; idx < m.size(); ++idx) {
+                    posVar1 = m[idx];
+                    if (std::regex_match(posVar1, std::regex("[A-Za-z]+[0-9A-Za-z]*"))) {
+                        if (!(this -> varsCopy.count(posVar1))) {
+                            varNotFound = true;
+                        } else {
+                            curTreeVal["OPERAND_1_VAL"] = this -> varsCopy[posVar1];
+                        }
+                    }
+                }
+
+                std::regex_search(condition, m, std::regex("[A-Za-z]+[0-9A-Za-z]*$"));
+
+                for (int idx = 0; idx < m.size(); ++idx) {
+                    posVar2 = m[idx];
+                    if (std::regex_match(posVar2, std::regex("[A-Za-z]+[0-9A-Za-z]*"))) {
+                        if (!(this -> varsCopy.count(posVar2))) {
+                            varNotFound = true;
+                        } else {
+                            curTreeVal["OPERAND_2_VAL"] = this -> varsCopy[posVar2];
+                        }
+                    }
+                }
+
+                curTreeVal["FLAGS"] = "IF_STATEMENT";
+                curTreeVal["CONDITION"] = condition;
+            }
 
             if (!(this -> varsCopy.count(string)) && openQuote || std::regex_match(string, std::regex("\\d+")) || std::regex_match(string, std::regex("(true|false)"))) {
                 curTreeVal["CALLED"] = "OUT";
@@ -274,7 +354,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             this -> exit_err("ERROR: Missing parenthesis on line: " + std::to_string(lineNum));
         } else if (end && lastToken != "STATEMENT_END" && lastToken != "") {
             this -> exit_err("ERROR: Unexpected token on line: " + std::to_string(lineNum));
-        } else if (!(end)) {
+        } else if (!(end) && !(ifStatementBegin) && !(ifStatementEnd)) {
             this -> exit_err("ERROR: Missing semicolen on line: " + std::to_string(lineNum));
         } else if (openQuote && !(closedQuote) || !(openQuote) && closedQuote) {
             this -> exit_err("ERROR: Lingering quotes on line: " + std::to_string(lineNum));
@@ -296,12 +376,14 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             this -> exit_err("ERROR: Integer overflow detected on line: " + std::to_string(lineNum));
         } else if (varIntUnderflow)  {
             this -> exit_err("ERROR: Integer underflow detected on line: " + std::to_string(lineNum));
+        } else if (ifStatementBegin && openParenCount == 0 && closedParenCount == 0) {
+            this -> exit_err("ERROR: Missing parenthesis on line: " + std::to_string(lineNum));
         }
 
-        parenCheck = false;
         outCalled = false;
         openParenCount = 0;
         closedParenCount = 0;
+        indentLevel = 0;
         end = false;
         space = false;
         lgOperator = false;
@@ -310,7 +392,21 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
         expectingIntVarValue = false;
         invalidTypeInt = false;
         varValueFound = false;
+
+
+        if (ifStatementEnd) {
+            ifStatementUsed = false;
+            ifStatementLine = false;
+            condition = "";
+        }
+
+        ifStatementBegin = false;
+        ifStatementEnd = false;
+
         varAlreadyExists = false;
+        ignoreIndent = false;
+        openCurly = false;
+        closedCurly = false;
         varLine = false;
         incrementUsed = false;
         equalityOperator = false;
@@ -319,6 +415,10 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
         varKey = "";
         varValue = "";
         curTreeVal.clear();
+    }
+
+    if (ifStatementLine) {
+        this -> exit_err("ERROR: If statement not terminated on line: " + std::to_string(lineNum));
     }
 
     return this -> tree;

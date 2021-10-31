@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <boost/algorithm/string/trim.hpp>
+#include <regex>
 
 
 void execute(std::map<std::string, std::string> treestream);
