@@ -1,6 +1,9 @@
 #include "../include/ExecutionHandler.hpp"
 
 
+#define TREE_DUMP
+
+
 void execute(std::map<std::string, std::string> treestream) {
     std::map<std::string, short int> intVars;
 
@@ -46,6 +49,111 @@ void execute(std::map<std::string, std::string> treestream) {
 
                 canExecute = operand_1 == operand_2;
                 wasTrue = operand_1 == operand_2;
+            } else if (std::regex_match(treestream["CONDITION"], std::regex("(\\d+<\\d+|\\w+<\\w+)"))) {
+                std::smatch m;
+                std::regex_search(treestream["CONDITION"], m, std::regex("^\\d+"));
+
+                std::string operand_1;
+                std::string operand_2;
+
+                short int operand_1_int;
+                short int operand_2_int;
+
+                for (int i = 0; i < m.size(); ++i) {
+                    operand_1 = m[i];
+                }
+
+                std::regex_search(treestream["CONDITION"], m, std::regex("\\d+$"));
+
+                for (int i = 0; i < m.size(); ++i) {
+                    operand_2 = m[i];
+                }
+
+                if (treestream.count("OPERAND_1_VAL")) {
+                    operand_1 = treestream["OPERAND_1_VAL"];
+                }
+
+                if (treestream.count("OPERAND_2_VAL")) {
+                    operand_2 = treestream["OPERAND_2_VAL"];
+                }
+
+                std::stringstream ss(operand_1);
+                ss >> operand_1_int;
+                ss = std::stringstream(operand_2);
+                ss >> operand_2_int;
+
+                canExecute = operand_1 < operand_2;
+                wasTrue = operand_1 < operand_2;
+            } else if (std::regex_match(treestream["CONDITION"], std::regex("(\\d+>\\d+|\\w+>\\w+)"))) {
+                std::smatch m;
+                std::regex_search(treestream["CONDITION"], m, std::regex("^\\d+"));
+
+                std::string operand_1;
+                std::string operand_2;
+
+                short int operand_1_int;
+                short int operand_2_int;
+
+                for (int i = 0; i < m.size(); ++i) {
+                    operand_1 = m[i];
+                }
+
+                std::regex_search(treestream["CONDITION"], m, std::regex("\\d+$"));
+
+                for (int i = 0; i < m.size(); ++i) {
+                    operand_2 = m[i];
+                }
+
+                if (treestream.count("OPERAND_1_VAL")) {
+                    operand_1 = treestream["OPERAND_1_VAL"];
+                }
+
+                if (treestream.count("OPERAND_2_VAL")) {
+                    operand_2 = treestream["OPERAND_2_VAL"];
+                }
+
+                std::stringstream ss(operand_1);
+                ss >> operand_1_int;
+                ss = std::stringstream(operand_2);
+                ss >> operand_2_int;
+
+                canExecute = operand_1 > operand_2;
+                wasTrue = operand_1 > operand_2;
+            }  else if (std::regex_match(treestream["CONDITION"], std::regex("(\\d+!=\\d+|\\w+!=\\w+)"))) {
+                std::smatch m;
+                std::regex_search(treestream["CONDITION"], m, std::regex("^\\d+"));
+
+                std::string operand_1;
+                std::string operand_2;
+
+                short int operand_1_int;
+                short int operand_2_int;
+
+                for (int i = 0; i < m.size(); ++i) {
+                    operand_1 = m[i];
+                }
+
+                std::regex_search(treestream["CONDITION"], m, std::regex("\\d+$"));
+
+                for (int i = 0; i < m.size(); ++i) {
+                    operand_2 = m[i];
+                }
+
+                if (treestream.count("OPERAND_1_VAL")) {
+                    operand_1 = treestream["OPERAND_1_VAL"];
+                }
+
+                if (treestream.count("OPERAND_2_VAL")) {
+                    operand_2 = treestream["OPERAND_2_VAL"];
+                }
+
+                std::stringstream ss(operand_1);
+                ss >> operand_1_int;
+                ss = std::stringstream(operand_2);
+                ss >> operand_2_int;
+
+                canExecute = operand_1 > operand_2;
+                wasTrue = operand_1 > operand_2;
             }
         } else if (treestream["FLAGS"] == "ELSE") {
             if (!(wasTrue)) {
