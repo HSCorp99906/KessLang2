@@ -152,8 +152,8 @@ void execute(std::map<std::string, std::string> treestream) {
                 ss = std::stringstream(operand_2);
                 ss >> operand_2_int;
 
-                canExecute = operand_1 > operand_2;
-                wasTrue = operand_1 > operand_2;
+                canExecute = operand_1 != operand_2;
+                wasTrue = operand_1 != operand_2;
             }
         } else if (treestream["FLAGS"] == "ELSE") {
             if (!(wasTrue)) {
