@@ -92,6 +92,16 @@ std::vector<std::map<std::string, std::string>> Lexer::tokenize() {
             }
         }
 
+        std::regex_search(this -> split_src[i], m, std::regex("str"));
+
+        for (int j = 0; j < m.size(); ++j) {
+            if (m[j] == "str") {
+                curToken["STRING_VAR_DECLARATION"] = "str";
+                tokens.push_back(curToken);
+                curToken.clear();
+            }
+        }
+
         std::regex_search(this -> split_src[i], m, std::regex("=="));
 
         for (int j = 0; j < m.size(); ++j) {

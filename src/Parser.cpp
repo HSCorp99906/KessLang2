@@ -78,6 +78,10 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
     short_uint openParenCount = 0;
     short_uint closedParenCount = 0;
 
+    bool expectingStringVarKey = false;
+    bool expectingStringVarValue = false;
+    bool invalidTypeString = false;
+
     for (int i = 0; i < this -> tokens.size(); ++i) {
         for (int j = 0; j < this -> tokens[i].size(); ++j) {
             for (token::const_iterator it = this -> tokens[i][j].begin(); it != tokens[i][j].end(); ++it) {
@@ -109,7 +113,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                         if (std::regex_match(varValue, std::regex("\".*\""))) {
                             invalidTypeInt = true;
                         } else if (std::regex_match(varValue, std::regex("[A-Za-z]+[a-zA-Z0-9]*"))) {
-                            unsupportedFeatureUsed = true;
+                            unsupportedFeatureUsed = true;  /* Feature is unsupported. */
                         } else if (std::regex_match(varValue, std::regex("\\d+\\.\\d+"))) {
                             invalidTypeInt = true;
                         }
@@ -133,6 +137,62 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
 
                             this -> varsCopy[varKey] = varValue;
 
+                            curTreeVal["VALUE"] = varValue;
+                            this -> tree.push_back(curTreeVal);
+                        }
+                    }
+                } else if (expectingStringVarKey && space) {
+                    if (it -> first != "SPACE") {
+                        varKey += it -> second;
+                    } else {
+                        expectingStringVarKey = false;
+                        expectingStringVarValue = true;
+                        space = false;
+                        curTreeVal["DECLARED"] = "STRING_VAR";
+                        curTreeVal["KEY"] = varKey;
+                    }
+                } else if (expectingStringVarValue) {
+                    if (it -> second == "=") {
+                        defined = true;
+                    }
+
+                    if (it -> first != "STATEMENT_END") {
+                        varValue += it -> second;
+                    } else {
+                        expectingStringVarValue = false;
+                    }
+
+                    if (!(expectingStringVarValue)) {
+                        varValue = std::regex_replace(varValue, std::regex("="), "");
+                        varValue = std::regex_replace(varValue, std::regex("`"), "");
+
+                        std::smatch sm;
+
+                        bool quote = false;  /* If there is quotes. */
+
+                        std::regex_search(varValue, sm, std::regex("\""));
+
+                        for (int v = 0; v < sm.size(); ++v) {
+                            if (sm[v] == "\"") {
+                                quote = true;
+                            }
+                        }
+
+                        if (std::regex_match(varValue, std::regex("\\d+")) || !(quote)) {
+                            invalidTypeString = true;
+                        } else if (std::regex_match(varValue, std::regex("[A-Za-z]+[a-zA-Z0-9]*"))) {
+                            unsupportedFeatureUsed = true;  /* Feature is unsupported. */
+                        } else if (std::regex_match(varValue, std::regex("\\d+\\.\\d+"))) {
+                            invalidTypeString = true;
+                        }
+
+                        if (this -> varsCopy.count(varKey)) {
+                            varAlreadyExists = true;
+                        }
+
+                        if (!(varAlreadyExists) && !(invalidTypeString) && !(unsupportedFeatureUsed)) {
+                            varValue = std::regex_replace(varValue, std::regex("\""), "");
+                            this -> varsCopy[varKey] = varValue;
                             curTreeVal["VALUE"] = varValue;
                             this -> tree.push_back(curTreeVal);
                         }
@@ -179,6 +239,9 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                     elseClause = true;
                     elseClauseBegin = true;
                     elseClauseLine = lineNum;
+                } else if (it -> first == "STRING_VAR_DECLARATION") {
+                    expectingStringVarKey = true;
+                    varLine = true;
                 }
 
                 if (ifStatementBegin && openParenCount > 0 && closedParenCount == 0) {
@@ -396,7 +459,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
         } else if (varAlreadyExists) {
             this -> exit_err("ERROR: Variable re-declared on line: " + std::to_string(lineNum));
         } else if (varNotFound) {
-            this -> exit_err("ERROR: Variable not found on line: " + std::to_string(lineNum));
+            this -> exit_err("ERROR: Variable not found near line: " + std::to_string(lineNum));
         } else if (varIntOverflow) {
             this -> exit_err("ERROR: Integer overflow detected on line: " + std::to_string(lineNum));
         } else if (varIntUnderflow)  {
@@ -405,6 +468,8 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             this -> exit_err("ERROR: Missing parenthesis on line: " + std::to_string(lineNum));
         } else if (unexpectedElseClause) {
             this -> exit_err("ERROR: Using else with no previous if on line: " + std::to_string(lineNum));
+        } else if (invalidTypeString) {
+            this -> exit_err("ERROR: Invalid data used for type str on line: " + std::to_string(lineNum));
         }
 
         outCalled = false;
