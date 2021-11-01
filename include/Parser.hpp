@@ -19,7 +19,6 @@ class Parser {
         __tokens tokens;
         std::vector<token> tree;
         token varsCopy;
-
         void exit_err(std::string message);
 
     public:

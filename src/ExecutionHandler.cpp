@@ -2,11 +2,6 @@
 
 
 void execute(std::map<std::string, std::string> treestream) {
-
-    /* Vars here are just in case we need to use them when we cannot get them from the parser. */
-    std::map<std::string, short int> intVars;
-    std::map<std::string, std::string> stringVars;
-
     static bool canExecute = true;
     static bool wasTrue = false;
 
@@ -240,17 +235,6 @@ void execute(std::map<std::string, std::string> treestream) {
                     }
                 }
             }
-        } else if (treestream.count("DECLARED")) {
-            if (treestream["DECLARED"] == "INT_VAR") {
-                std::stringstream ss(treestream["VALUE"]);
-                ss >> intVars[treestream["KEY"]];
-            } else if (treestream["DECLARED"] == "STRING_VAR") {
-                stringVars[treestream["KEY"]] = treestream["VALUE"];
-            }
-        } else if (treestream.count("OPERATOR")) {
-            if (treestream["OPERATOR"] == "PRE-INCREMENT") {
-                ++intVars[treestream["KEY"]];
-            }
-        }
+        }  // Else if goes here.
     }
 }
