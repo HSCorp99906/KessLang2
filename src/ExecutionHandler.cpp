@@ -1,9 +1,6 @@
 #include "../include/ExecutionHandler.hpp"
 
 
-#define TREE_DUMP
-
-
 void execute(std::map<std::string, std::string> treestream) {
     std::map<std::string, short int> intVars;
 
