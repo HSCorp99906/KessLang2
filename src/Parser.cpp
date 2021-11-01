@@ -34,6 +34,8 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
     bool openCurly = false;
     bool closedCurly = false;
 
+    unsigned int lastIfStatementLine = 0;
+
     token curTreeVal;
 
     std::string string = "";
@@ -59,10 +61,17 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
     bool ifStatementEnd = false;
     std::string condition = "";
 
+    bool lastLineIf = false;
+
     bool unexpectedIndent = false;
 
     short_uint indentLevel = 0;
     bool ignoreIndent = false;
+    bool elseClause = false;
+    bool unexpectedElseClause = false;
+    bool elseClauseBegin = false;
+    bool elseClauseEnd = false;
+    unsigned int elseClauseLine = 0;
 
     bool incrementUsed = false;
 
@@ -143,7 +152,7 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                 }
 
                 if (it -> first != "SPACE" && it -> first != "IDENTIFIER") {
-                    /* This may need to be changed sooner or later */
+                    /* This may need to be changed sooner or later. */
                     ignoreIndent = true;
                 }
 
@@ -166,6 +175,10 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                     ifStatementLine = true;
                     ifStatementUsed = true;
                     ifStatementBegin = true;
+                } else if (it -> first == "ELSE") {
+                    elseClause = true;
+                    elseClauseBegin = true;
+                    elseClauseLine = lineNum;
                 }
 
                 if (ifStatementBegin && openParenCount > 0 && closedParenCount == 0) {
@@ -183,6 +196,11 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
                 if (ifStatementUsed && it -> first == "CLOSED_CURLY") {
                     closedCurly = true;
                     ifStatementEnd = true;
+                    lastIfStatementLine = lineNum;
+                    lastLineIf = true;
+                } else if (elseClause && it -> first == "CLOSED_CURLY") {
+                    closedCurly = true;
+                    elseClauseEnd = true;
                 }
 
                 if (it -> first == "OPEN_P") {
@@ -246,6 +264,8 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
 
                 curTreeVal["FLAGS"] = "IF_STATEMENT";
                 curTreeVal["CONDITION"] = condition;
+            } else if (elseClause) {
+                curTreeVal["FLAGS"] = "ELSE";
             }
 
             if (!(this -> varsCopy.count(string)) && openQuote || std::regex_match(string, std::regex("\\d+")) || std::regex_match(string, std::regex("(true|false)"))) {
@@ -350,11 +370,16 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             }
         }
 
+        if (elseClause && !(lastLineIf)) {
+            unexpectedElseClause = true;
+        }
+
+
         if (outCalled && openParenCount == 0 && closedParenCount == 0) {
             this -> exit_err("ERROR: Missing parenthesis on line: " + std::to_string(lineNum));
         } else if (end && lastToken != "STATEMENT_END" && lastToken != "") {
             this -> exit_err("ERROR: Unexpected token on line: " + std::to_string(lineNum));
-        } else if (!(end) && !(ifStatementBegin) && !(ifStatementEnd)) {
+        } else if (!(end) && !(ifStatementBegin) && !(ifStatementEnd) && !(elseClauseBegin) && !(elseClauseEnd)) {
             this -> exit_err("ERROR: Missing semicolen on line: " + std::to_string(lineNum));
         } else if (openQuote && !(closedQuote) || !(openQuote) && closedQuote) {
             this -> exit_err("ERROR: Lingering quotes on line: " + std::to_string(lineNum));
@@ -378,6 +403,8 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
             this -> exit_err("ERROR: Integer underflow detected on line: " + std::to_string(lineNum));
         } else if (ifStatementBegin && openParenCount == 0 && closedParenCount == 0) {
             this -> exit_err("ERROR: Missing parenthesis on line: " + std::to_string(lineNum));
+        } else if (unexpectedElseClause) {
+            this -> exit_err("ERROR: Using else with no previous if on line: " + std::to_string(lineNum));
         }
 
         outCalled = false;
@@ -388,16 +415,25 @@ std::vector<std::map<std::string, std::string>> Parser::parse() {
         space = false;
         lgOperator = false;
         unsupportedFeatureUsed = false;
+        elseClauseBegin = false;
         expectingIntVarKey = false;
         expectingIntVarValue = false;
         invalidTypeInt = false;
         varValueFound = false;
+
+        if (elseClauseLine > lastIfStatementLine + 2) {
+            lastIfStatementLine = 0;
+            lastLineIf = false;
+        }
 
 
         if (ifStatementEnd) {
             ifStatementUsed = false;
             ifStatementLine = false;
             condition = "";
+        } else if (elseClauseEnd) {
+            elseClause = false;
+            elseClauseLine = 0;
         }
 
         ifStatementBegin = false;

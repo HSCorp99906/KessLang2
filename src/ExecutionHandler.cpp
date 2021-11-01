@@ -4,7 +4,8 @@
 void execute(std::map<std::string, std::string> treestream) {
     std::map<std::string, short int> intVars;
 
-    bool canExecute = true;
+    static bool canExecute = true;
+    static bool wasTrue = false;
 
     #ifdef TREE_DUMP
     typedef std::map<std::string, std::string> ss_map;
@@ -44,8 +45,18 @@ void execute(std::map<std::string, std::string> treestream) {
                 }
 
                 canExecute = operand_1 == operand_2;
+                wasTrue = operand_1 == operand_2;
+            }
+        } else if (treestream["FLAGS"] == "ELSE") {
+            if (!(wasTrue)) {
+                canExecute = true;
+            } else {
+                canExecute = false;
             }
         }
+    } else {
+        wasTrue = false;
+        canExecute = true;
     }
 
     if (canExecute) {
